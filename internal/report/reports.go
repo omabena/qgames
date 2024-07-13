@@ -1,11 +1,14 @@
 package report
 
 import (
-	"go.uber.org/zap"
+	"fmt"
 	"github.com/omabena/qgames/internal/transformer"
+	"go.uber.org/zap"
+	"sort"
+	"strings"
 )
 
-func Matches(g []transformer.Game) GamesReport {
+func Matches(g []transformer.Game) string {
 	zap.L().Info("Matches Ranking report executing")
 	games := GamesReport{
 		Games: []Match{},
@@ -22,10 +25,29 @@ func Matches(g []transformer.Game) GamesReport {
 			TotalKills: game.TotalKills,
 		})
 	}
-	return games
+	sb := strings.Builder{}
+
+	_, _ = sb.WriteString("***************\n")
+	_, _ = sb.WriteString("***************\n")
+	_, _ = sb.WriteString("Games report\n")
+	for _, game := range games.Games {
+		_, _ = sb.WriteString(fmt.Sprintf("Game: %s\n", game.Name))
+		_, _ = sb.WriteString(fmt.Sprintf("Total Kills: %d\n", game.TotalKills))
+		_, _ = sb.WriteString("Players: [")
+		_, _ = sb.WriteString(strings.Join(game.Players, ", "))
+		_, _ = sb.WriteString("]\n")
+
+		_, _ = sb.WriteString("Kills {\n")
+		for player, kill := range game.Kills {
+			_, _ = sb.WriteString(fmt.Sprintf("\t%s: %d\n", player, kill))
+		}
+		_, _ = sb.WriteString("}\n")
+	}
+
+	return sb.String()
 }
 
-func PlayersRanking(games []transformer.Game) PlayerReport {
+func PlayersRanking(games []transformer.Game) string {
 	zap.L().Info("Players Ranking report executing")
 	rankings := make(map[string]int)
 	for _, game := range games {
@@ -33,12 +55,36 @@ func PlayersRanking(games []transformer.Game) PlayerReport {
 			rankings[player] += score
 		}
 	}
-	return PlayerReport{
-		Ranking: rankings,
+
+	type kv struct {
+		Key   string
+		Value int
 	}
+	var kvSlice []kv
+	for k, v := range rankings {
+		kvSlice = append(kvSlice, kv{k, v})
+	}
+
+	sort.Slice(kvSlice, func(i, j int) bool {
+		return kvSlice[i].Value > kvSlice[j].Value
+	})
+
+	var sortedPlayers []string
+	for _, kv := range kvSlice {
+		sortedPlayers = append(sortedPlayers, kv.Key)
+	}
+
+	sb := strings.Builder{}
+	_, _ = sb.WriteString("***************\n")
+	_, _ = sb.WriteString("***************\n")
+	_, _ = sb.WriteString("Players Ranking\n")
+	for _, player := range sortedPlayers {
+		_, _ = sb.WriteString(fmt.Sprintf("%s: %d\n", player, rankings[player]))
+	}
+	return sb.String()
 }
 
-func DeathMod(games []transformer.Game) DeathModeReport {
+func DeathMod(games []transformer.Game) string {
 	zap.L().Info("DeathMod report executing")
 	report := DeathModeReport{
 		DeathMode: []DeathMode{},
@@ -56,5 +102,18 @@ func DeathMod(games []transformer.Game) DeathModeReport {
 		report.DeathMode = append(report.DeathMode, deathMode)
 	}
 
-	return report
+	sb := strings.Builder{}
+	_, _ = sb.WriteString("***************\n")
+	_, _ = sb.WriteString("***************\n")
+	_, _ = sb.WriteString("Death Mode report\n")
+	for _, gameDeath := range report.DeathMode {
+		game := fmt.Sprintf("Game: %s\n", gameDeath.Game)
+		_, _ = sb.WriteString(game)
+
+		for mod, count := range gameDeath.Count {
+			modCount := fmt.Sprintf("Mod: %s, Count: %d\n", mod, count)
+			_, _ = sb.WriteString(modCount)
+		}
+	}
+	return sb.String()
 }

@@ -21,6 +21,6 @@ type DeathModeReport struct {
 }
 
 type DeathMode struct {
-	Game  string
+	Game      string
 	Count map[string]int
 }

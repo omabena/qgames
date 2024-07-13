@@ -83,8 +83,8 @@ func reportGamesGroup(wg *sync.WaitGroup, gamesChan <-chan []transformer.Game) {
 	defer wg.Done()
 	zap.L().Info("Games group reporting started")
 	games := <-gamesChan
-	out := report.Matches(games)
-	fmt.Println(out)
+	gamesReport := report.Matches(games)
+	fmt.Println(gamesReport)
 	zap.L().Info("finish games group repot")
 }
 
@@ -100,7 +100,7 @@ func reportDeathMod(wg *sync.WaitGroup, gamesChan <-chan []transformer.Game) {
 	defer wg.Done()
 	zap.L().Info("Games death mod")
 	games := <-gamesChan
-	out := report.PlayersRanking(games)
-	fmt.Println(out)
+	deathModReport := report.DeathMod(games)
+	fmt.Println(deathModReport)
 	zap.L().Info("finish death mod report")
 }

@@ -22,7 +22,7 @@ func NewCmd() *cobra.Command {
 	}
 
 	cmd.AddCommand(&cobra.Command{
-		Use:   "group-data",
+		Use:   "run",
 		Short: "Parse group data by match",
 		RunE:  run,
 	})
