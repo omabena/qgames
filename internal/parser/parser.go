@@ -8,27 +8,52 @@ import (
 	"strings"
 )
 
-func ParseLogMatch(ctx context.Context, reader io.Reader) ([]Match, error) {
-	var logEntries []Match
+type ReadLog struct {
+	Match []Match
+}
+
+func New() *ReadLog {
+	return &ReadLog{
+		Match: nil,
+	}
+}
+
+func (r *ReadLog) ReadLogGame(ctx context.Context, reader io.Reader, matchChan chan<- []Match, done chan<- bool) {
+	defer func() {
+		done <- true
+	}()
 	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
 		line := scanner.Text()
-		entry, err := parseLine(line)
-		if err != nil {
-			continue
-		}
-		logEntries = append(logEntries, entry)
+		r.processMatch(matchChan, line)
 	}
-
 	if err := scanner.Err(); err != nil {
-		return nil, err
+		return
 	}
+}
 
-	return logEntries, nil
+func (r *ReadLog) processMatch(matchChan chan<- []Match, line string) {
+	entry, err := parseLine(line)
+	if err != nil {
+		return
+	}
+	switch entry.(type) {
+	case InitGame:
+		if r.Match == nil {
+			r.Match = []Match{}
+		}
+	case ShutdownGame:
+		// create a match and send it to the channel
+		newMatch := make([]Match, len(r.Match))
+		copy(newMatch, r.Match)
+		matchChan <- newMatch
+		r.Match = nil
+	default:
+		r.Match = append(r.Match, entry)
+	}
 }
 
 func parseLine(line string) (Match, error) {
-
 	initLine := strings.TrimLeft(line, " ")
 	parts := strings.SplitN(initLine, " ", 2)
 	if len(parts) < 2 {

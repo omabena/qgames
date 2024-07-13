@@ -12,7 +12,6 @@ type Transformer struct {
 }
 
 func New() *Transformer {
-
 	return &Transformer{
 		Games: []Game{},
 	}

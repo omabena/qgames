@@ -1,7 +1,6 @@
 package parser
 
-type Match interface {
-}
+type Match interface { }
 
 type InitGame struct {
 	Timestamp string
