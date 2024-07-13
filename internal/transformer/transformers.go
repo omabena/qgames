@@ -17,11 +17,12 @@ func New() *Transformer {
 	}
 }
 
-func (t *Transformer) Matches(ctx context.Context, match []parser.Match) error {
+func (t *Transformer) TransformToGame(ctx context.Context, match []parser.Match) error {
 	game := &Game{
 		Name:   fmt.Sprintf("game_%d", len(t.Games)+1),
 		Kills:  make(map[string]int),
 		Scores: make(map[string]int),
+		Mods:   make(map[string]int),
 	}
 	for _, action := range match {
 		switch v := action.(type) {
@@ -39,7 +40,6 @@ func (t *Transformer) Matches(ctx context.Context, match []parser.Match) error {
 			zap.L().Debug("ignore not process", zap.Any("action", v))
 		}
 	}
-
 	t.Games = append(t.Games, *game)
 	return nil
 }
@@ -47,9 +47,12 @@ func (t *Transformer) Matches(ctx context.Context, match []parser.Match) error {
 func (t *Transformer) transformKill(game *Game, kill parser.Kill) error {
 	zap.L().Info("Kill", zap.Any("action", kill))
 	game.TotalKills++
-	game.Kills[kill.Killer]++
-	game.Scores[kill.Killer]++
+	if kill.Killer != "<world>" {
+		game.Kills[kill.Killer]++
+		game.Scores[kill.Killer]++
+	}
 	game.Scores[kill.Killed]--
+	game.Mods[kill.Mod]++
 	return nil
 }
 

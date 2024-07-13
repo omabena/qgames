@@ -26,7 +26,7 @@ func TestMatches(t *testing.T) {
 	require.NotEmpty(t, entries)
 
 	transformer := New()
-	err = transformer.Matches(ctx, entries)
+	err = transformer.TransformToGame(ctx, entries)
 	require.NoError(t, err)
 
 	assert.Equal(t, 1, len(transformer.Games))
@@ -37,6 +37,10 @@ func TestMatches(t *testing.T) {
 	assert.Equal(t, -2, transformer.Games[0].Scores["Mocinha"])
 	assert.Equal(t, -2, transformer.Games[0].Scores["Zeh"])
 	assert.Equal(t, -1, transformer.Games[0].Scores["Dono da Bola"])
+	assert.Equal(t, 9, transformer.Games[0].Mods["MOD_TRIGGER_HURT"])
+	assert.Equal(t, 3, transformer.Games[0].Mods["MOD_ROCKET_SPLASH"])
+	assert.Equal(t, 2, transformer.Games[0].Mods["MOD_FALLING"])
+	assert.Equal(t, 1, transformer.Games[0].Mods["MOD_ROCKET"])
 }
 
 func TestMultiplesMatchesTransformation(t *testing.T) {
@@ -61,7 +65,7 @@ gameTransformer:
 			break gameTransformer
 		case entries := <-matchChan:
 			require.NotEmpty(t, entries)
-			err = transformer.Matches(ctx, entries)
+			err = transformer.TransformToGame(ctx, entries)
 			require.NoError(t, err)
 		}
 	}
