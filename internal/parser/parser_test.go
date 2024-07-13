@@ -77,6 +77,8 @@ func TestParseKill(t *testing.T) {
 	matchLog := strings.NewReader(`
  20:54 Kill: 1022 2 22: <world> killed Isgalamido by MOD_TRIGGER_HURT
  22:06 Kill: 2 3 7: Isgalamido killed Mocinha by MOD_ROCKET_SPLASH
+  1:41 Kill: 1022 2 19: <world> killed Dono da Bola by MOD_FALLING
+  1:42 Kill: 1022 2 19: Dono da Bola killed Arcius malus by MOD_FALLING
 `)
 	entries, error := ParseLogMatch(ctx, matchLog)
 	require.NoError(t, error)
@@ -85,7 +87,16 @@ func TestParseKill(t *testing.T) {
 	assert.Equal(t, entries[0].(Kill).Killer, "<world>")
 	assert.Equal(t, entries[0].(Kill).Killed, "Isgalamido")
 	assert.Equal(t, entries[0].(Kill).Mod, "MOD_TRIGGER_HURT")
+
 	assert.Equal(t, entries[1].(Kill).Killer, "Isgalamido")
 	assert.Equal(t, entries[1].(Kill).Killed, "Mocinha")
 	assert.Equal(t, entries[1].(Kill).Mod, "MOD_ROCKET_SPLASH")
+
+	assert.Equal(t, entries[2].(Kill).Killer, "<world>")
+	assert.Equal(t, entries[2].(Kill).Killed, "Dono da Bola")
+	assert.Equal(t, entries[2].(Kill).Mod, "MOD_FALLING")
+
+	assert.Equal(t, entries[3].(Kill).Killer, "Dono da Bola")
+	assert.Equal(t, entries[3].(Kill).Killed, "Arcius malus")
+	assert.Equal(t, entries[3].(Kill).Mod, "MOD_FALLING")
 }

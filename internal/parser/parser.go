@@ -69,11 +69,18 @@ func parseShutdownGame(timestamp, _ string) (ShutdownGame, error) {
 
 func parseKill(timestamp, rest string) (Kill, error) {
 	parts := strings.SplitN(strings.TrimPrefix(rest, "Kill: "), ": ", 2)
-	dataKill := strings.Fields(parts[1])
-	if len(dataKill) < 5 {
+	dataKill := strings.SplitN(parts[1], "killed", 2)
+	if len(dataKill) < 2 {
 		return Kill{}, fmt.Errorf("invalid kill line: %s", rest)
 	}
-	return Kill{Timestamp: timestamp, Killer: dataKill[0], Killed: dataKill[2], Mod: dataKill[4]}, nil
+	killer := strings.TrimSuffix(dataKill[0], " ")
+	dataKilled := strings.SplitN(strings.TrimPrefix(dataKill[1], " "), "by", 2)
+	if len(dataKill) < 2 {
+		return Kill{}, fmt.Errorf("invalid kill line: %s", rest)
+	}
+	killed := strings.TrimSuffix(dataKilled[0], " ")
+	mod := strings.TrimPrefix(dataKilled[1], " ")
+	return Kill{Timestamp: timestamp, Killer: killer, Killed: killed, Mod: mod}, nil
 }
 
 func parseKeyValuePairs(s string) map[string]string {
