@@ -1,10 +1,12 @@
 package report
 
 import (
+	"go.uber.org/zap"
 	"github.com/omabena/qgames/internal/transformer"
 )
 
 func Matches(g []transformer.Game) GamesReport {
+	zap.L().Info("Matches Ranking report executing")
 	games := GamesReport{
 		Games: []Match{},
 	}
@@ -24,6 +26,7 @@ func Matches(g []transformer.Game) GamesReport {
 }
 
 func PlayersRanking(games []transformer.Game) PlayerReport {
+	zap.L().Info("Players Ranking report executing")
 	rankings := make(map[string]int)
 	for _, game := range games {
 		for player, score := range game.Scores {
@@ -36,6 +39,7 @@ func PlayersRanking(games []transformer.Game) PlayerReport {
 }
 
 func DeathMod(games []transformer.Game) DeathModeReport {
+	zap.L().Info("DeathMod report executing")
 	report := DeathModeReport{
 		DeathMode: []DeathMode{},
 	}

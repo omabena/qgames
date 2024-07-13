@@ -17,7 +17,7 @@ func New() *Transformer {
 	}
 }
 
-func (t *Transformer) TransformToGame(ctx context.Context, match []parser.Match) error {
+func (t *Transformer) TransformToGame(ctx context.Context, match []parser.Match) {
 	game := &Game{
 		Name:   fmt.Sprintf("game_%d", len(t.Games)+1),
 		Kills:  make(map[string]int),
@@ -41,7 +41,10 @@ func (t *Transformer) TransformToGame(ctx context.Context, match []parser.Match)
 		}
 	}
 	t.Games = append(t.Games, *game)
-	return nil
+}
+
+func (t *Transformer) GetGames() []Game {
+	return t.Games
 }
 
 func (t *Transformer) transformKill(game *Game, kill parser.Kill) error {
