@@ -4,6 +4,9 @@
 Solution is implemented in Go to take that takes advantage of concurrecy features to allow for concurrent processing of some parts of the flows.
 
 Reports will be run concurrently and the results will be printed to the console.
+
+#### NOTE: Kills done to to a player to itself due to a `MOD_ROCKET_SPLASH` is not added to the score nor the kills.
+
 ### How to run
 There are two ways to run the project and they are described below:
 
