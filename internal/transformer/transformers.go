@@ -50,7 +50,7 @@ func (t *Transformer) GetGames() []Game {
 func (t *Transformer) transformKill(game *Game, kill parser.Kill) error {
 	zap.L().Info("Kill", zap.Any("action", kill))
 	game.TotalKills++
-	if kill.Killer != "<world>" {
+	if kill.Killer != "<world>" && kill.Killer != kill.Killed {
 		game.Kills[kill.Killer]++
 		game.Scores[kill.Killer]++
 	}

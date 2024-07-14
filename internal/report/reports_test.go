@@ -68,7 +68,7 @@ func TestPlayersRanking(t *testing.T) {
 	}
 
 	report := PlayersRanking(games)
-	assert.NotEmpty(t, report)
+	assert.Equal(t, "***************\n***************\nPlayers Ranking\nplayer2: 4\nplayer1: 2\n", report)
 }
 
 func TestDeathMod(t *testing.T) {

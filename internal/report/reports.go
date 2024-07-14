@@ -111,7 +111,7 @@ func DeathMod(games []transformer.Game) string {
 		_, _ = sb.WriteString(game)
 
 		for mod, count := range gameDeath.Count {
-			modCount := fmt.Sprintf("Mod: %s, Count: %d\n", mod, count)
+			modCount := fmt.Sprintf("%s, Count: %d\n", mod, count)
 			_, _ = sb.WriteString(modCount)
 		}
 	}
