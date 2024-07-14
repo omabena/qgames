@@ -20,9 +20,9 @@ func New() *ReadLog {
 	}
 }
 
-func (r *ReadLog) ReadLogGame(ctx context.Context, reader io.Reader, matchChan chan<- []Match, done chan<- bool) {
+func (r *ReadLog) ReadLogGame(ctx context.Context, reader io.Reader, matchChan chan<- []Match, done chan<- struct{}) {
 	defer func() {
-		done <- true
+		done <- struct{}{}
 	}()
 	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {

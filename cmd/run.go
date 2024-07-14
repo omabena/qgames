@@ -40,7 +40,7 @@ func run(_ *cobra.Command, _ []string) error {
 	parser := parser.New()
 	transformer := transformer.New()
 
-	doneReports := make(chan bool)
+	doneReports := make(chan struct{})
 	qgames := qgame.NewQGames(&cfg, parser, transformer)
 	go qgames.Execute(ctx, doneReports)
 	<-doneReports

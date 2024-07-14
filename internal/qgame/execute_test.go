@@ -14,7 +14,7 @@ func TestQGame(t *testing.T) {
 	cfg := config.NewConfig(ctx)
 	cfg.LogFilePath = "fixtures/qgames.log"
 
-	doneReports := make(chan bool)
+	doneReports := make(chan struct{})
 
 	parser := parser.New()
 	transformer := transformer.New()

@@ -22,7 +22,7 @@ type QGames struct {
 }
 
 type readLogGame interface {
-	ReadLogGame(ctx context.Context, reader io.Reader, matchChan chan<- []parser.Match, done chan<- bool)
+	ReadLogGame(ctx context.Context, reader io.Reader, matchChan chan<- []parser.Match, done chan<- struct{})
 }
 
 type transformerLog interface {
@@ -38,9 +38,9 @@ func NewQGames(cfg *config.Config, readreadLogGame readLogGame, transformerLog t
 	}
 }
 
-func (qg QGames) Execute(ctx context.Context, doneReports chan<- bool) error {
+func (qg QGames) Execute(ctx context.Context, doneReports chan<- struct{}) error {
 	defer func() {
-		doneReports <- true
+		doneReports <- struct{}{}
 	}()
 	file, err := os.Open(qg.Config.LogFilePath)
 	if err != nil {
@@ -50,7 +50,7 @@ func (qg QGames) Execute(ctx context.Context, doneReports chan<- bool) error {
 	defer file.Close()
 
 	matchChan := make(chan []parser.Match)
-	doneReadLog := make(chan bool)
+	doneReadLog := make(chan struct{})
 
 	go qg.readLogGame.ReadLogGame(ctx, file, matchChan, doneReadLog)
 loop:

@@ -17,7 +17,7 @@ func TestParseInitGame(t *testing.T) {
  20:37 ShutdownGame:
 `)
 	matchChan := make(chan []Match)
-	doneChan := make(chan bool)
+	doneChan := make(chan struct{})
 	readLog := New()
 	go readLog.ReadLogGame(ctx, matchLog, matchChan, doneChan)
 	entries := <-matchChan
@@ -36,7 +36,7 @@ func TestParseClientUserinfoChanged(t *testing.T) {
  20:37 ShutdownGame:
 `)
 	matchChan := make(chan []Match)
-	doneChan := make(chan bool)
+	doneChan := make(chan struct{})
 	readLog := New()
 	go readLog.ReadLogGame(ctx, matchLog, matchChan, doneChan)
 
@@ -64,7 +64,7 @@ func TestParseLogFromFile(t *testing.T) {
 	ctx := context.Background()
 
 	matchChan := make(chan []Match)
-	doneChan := make(chan bool)
+	doneChan := make(chan struct{})
 	readLog := New()
 	go readLog.ReadLogGame(ctx, file, matchChan, doneChan)
 	entries := <-matchChan
@@ -85,7 +85,7 @@ func TestParseKill(t *testing.T) {
  20:37 ShutdownGame:
 `)
 	matchChan := make(chan []Match)
-	doneChan := make(chan bool)
+	doneChan := make(chan struct{})
 	readLog := New()
 	go readLog.ReadLogGame(ctx, matchLog, matchChan, doneChan)
 	entries := <-matchChan
@@ -129,7 +129,7 @@ func TestParseKillMultipleGames(t *testing.T) {
  20:37 ShutdownGame:
 `)
 	matchChan := make(chan []Match)
-	doneChan := make(chan bool)
+	doneChan := make(chan struct{})
 	readLog := New()
 	go readLog.ReadLogGame(ctx, matchLog, matchChan, doneChan)
 	entries := <-matchChan

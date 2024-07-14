@@ -19,7 +19,7 @@ func TestMatches(t *testing.T) {
 
 	ctx := context.Background()
 	matchChan := make(chan []parser.Match)
-	doneChan := make(chan bool)
+	doneChan := make(chan struct{})
 	readLog := parser.New()
 	go readLog.ReadLogGame(ctx, file, matchChan, doneChan)
 	entries := <-matchChan
@@ -51,7 +51,7 @@ func TestMultiplesMatchesTransformation(t *testing.T) {
 
 	ctx := context.Background()
 	matchChan := make(chan []parser.Match)
-	doneChan := make(chan bool)
+	doneChan := make(chan struct{})
 	readLog := parser.New()
 
 	go readLog.ReadLogGame(ctx, file, matchChan, doneChan)
@@ -60,8 +60,7 @@ func TestMultiplesMatchesTransformation(t *testing.T) {
 gameTransformer:
 	for {
 		select {
-		case condition := <-doneChan:
-			require.True(t, condition)
+		case <-doneChan:
 			break gameTransformer
 		case entries := <-matchChan:
 			require.NotEmpty(t, entries)
