@@ -22,6 +22,10 @@ go run main.go qgames-parser run
 
 To finish the execution, you can press `Ctrl + C` to stop the execution.
 
+### Processing flow to to read log, group each game and generates reports
+![diagramaflow](https://github.com/user-attachments/assets/50efa70f-0aa8-4cfd-885c-815b3905f6bc)
+
+
 ### Output
 The output will be printed for three reports into the console and will be in the following format:
 
