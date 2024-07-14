@@ -18,7 +18,7 @@ func TestQGame(t *testing.T) {
 
 	parser := parser.New()
 	transformer := transformer.New()
-	qgames := NewQGames(ctx, &cfg, parser, transformer)
+	qgames := NewQGames(&cfg, parser, transformer)
 	go qgames.Execute(ctx, doneReports)
 	t.Log("executing ...")
 	<-doneReports

@@ -2,9 +2,10 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
-	"fmt"
+	"time"
 
 	"github.com/omabena/qgames/internal/config"
 	"github.com/omabena/qgames/internal/qgame"
@@ -40,11 +41,12 @@ func run(_ *cobra.Command, _ []string) error {
 	transformer := transformer.New()
 
 	doneReports := make(chan bool)
-	qgames := qgame.NewQGames(ctx, &cfg, parser, transformer)
+	qgames := qgame.NewQGames(&cfg, parser, transformer)
 	go qgames.Execute(ctx, doneReports)
 	<-doneReports
+	fmt.Println("\ncompleted processing qgame log")
+	fmt.Println("\nwaiting for signal to exit ... press ctrl+c to exit")
 
-	fmt.Println("\n\ncompleted processing qgame log, to exit preses ctrl + c")
 	<-ctx.Done()
 	return nil
 }
@@ -52,7 +54,7 @@ func run(_ *cobra.Command, _ []string) error {
 func cancelationSignal() context.Context {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
 	go func() {
 		<-c
 		cancel()

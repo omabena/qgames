@@ -30,7 +30,7 @@ type transformerLog interface {
 	GetGames() []transformer.Game
 }
 
-func NewQGames(ctx context.Context, cfg *config.Config, readreadLogGame readLogGame, transformerLog transformerLog) *QGames {
+func NewQGames(cfg *config.Config, readreadLogGame readLogGame, transformerLog transformerLog) *QGames {
 	return &QGames{
 		Config:         cfg,
 		readLogGame:    readreadLogGame,
@@ -38,11 +38,14 @@ func NewQGames(ctx context.Context, cfg *config.Config, readreadLogGame readLogG
 	}
 }
 
-func (qg QGames) Execute(ctx context.Context, doneReports chan<- bool) {
+func (qg QGames) Execute(ctx context.Context, doneReports chan<- bool) error {
+	defer func() {
+		doneReports <- true
+	}()
 	file, err := os.Open(qg.Config.LogFilePath)
 	if err != nil {
 		zap.L().Error("could not open file", zap.Error(err))
-		return
+		return err
 	}
 	defer file.Close()
 
@@ -53,6 +56,8 @@ func (qg QGames) Execute(ctx context.Context, doneReports chan<- bool) {
 loop:
 	for {
 		select {
+		case <-ctx.Done():
+			return ctx.Err()
 		case <-doneReadLog:
 			break loop
 		case entries := <-matchChan:
@@ -66,41 +71,67 @@ loop:
 
 	var wg sync.WaitGroup
 	wg.Add(3)
-	go reportGamesGroup(&wg, gameGroupChan)
-	go reportPlayersRanking(&wg, playersRankingChan)
-	go reportDeathMod(&wg, deathModChan)
 
-	gameGroupChan <- qg.transformerLog.GetGames()
-	playersRankingChan <- qg.transformerLog.GetGames()
-	deathModChan <- qg.transformerLog.GetGames()
+	go reportGamesGroup(ctx, &wg, gameGroupChan)
+	go reportPlayersRanking(ctx, &wg, playersRankingChan)
+	go reportDeathMod(ctx, &wg, deathModChan)
+
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case gameGroupChan <- qg.transformerLog.GetGames():
+	}
+
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case playersRankingChan <- qg.transformerLog.GetGames():
+	}
+
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case deathModChan <- qg.transformerLog.GetGames():
+	}
+
 	wg.Wait()
-	zap.L().Info("finish executiong")
-	doneReports <- true
-	zap.L().Info("after done reports channel")
+	return nil
 }
 
-func reportGamesGroup(wg *sync.WaitGroup, gamesChan <-chan []transformer.Game) {
+func reportGamesGroup(ctx context.Context, wg *sync.WaitGroup, gamesChan <-chan []transformer.Game) {
 	defer wg.Done()
 	zap.L().Info("Games group reporting started")
-	games := <-gamesChan
-	gamesReport := report.Matches(games)
-	fmt.Println(gamesReport)
-	zap.L().Info("finish games group repot")
+	select {
+	case <-ctx.Done():
+		return
+	case games := <-gamesChan:
+		gamesReport := report.Matches(games)
+		fmt.Println(gamesReport)
+		zap.L().Info("finish games group repot")
+	}
 }
 
-func reportPlayersRanking(wg *sync.WaitGroup, gamesChan <-chan []transformer.Game) {
+func reportPlayersRanking(ctx context.Context, wg *sync.WaitGroup, gamesChan <-chan []transformer.Game) {
 	defer wg.Done()
 	zap.L().Info("Games players ranking started")
-	games := <-gamesChan
-	out := report.PlayersRanking(games)
-	fmt.Println(out)
-	zap.L().Info("finish players ranking repot")
+	select {
+	case <-ctx.Done():
+		return
+	case games := <-gamesChan:
+		out := report.PlayersRanking(games)
+		fmt.Println(out)
+		zap.L().Info("finish players ranking repot")
+	}
 }
-func reportDeathMod(wg *sync.WaitGroup, gamesChan <-chan []transformer.Game) {
+func reportDeathMod(ctx context.Context, wg *sync.WaitGroup, gamesChan <-chan []transformer.Game) {
 	defer wg.Done()
 	zap.L().Info("Games death mod")
-	games := <-gamesChan
-	deathModReport := report.DeathMod(games)
-	fmt.Println(deathModReport)
-	zap.L().Info("finish death mod report")
+	select {
+	case <-ctx.Done():
+		return
+	case games := <-gamesChan:
+		deathModReport := report.DeathMod(games)
+		fmt.Println(deathModReport)
+		zap.L().Info("finish death mod report")
+	}
 }

@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 	"strings"
+
+	"go.uber.org/zap"
 )
 
 type ReadLog struct {
@@ -25,17 +27,19 @@ func (r *ReadLog) ReadLogGame(ctx context.Context, reader io.Reader, matchChan c
 	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
 		line := scanner.Text()
-		r.processMatch(matchChan, line)
+		if err := r.processMatch(ctx, matchChan, line); err != nil {
+			zap.L().Debug("error processing line", zap.Error(err))
+		}
 	}
 	if err := scanner.Err(); err != nil {
 		return
 	}
 }
 
-func (r *ReadLog) processMatch(matchChan chan<- []Match, line string) {
+func (r *ReadLog) processMatch(ctx context.Context, matchChan chan<- []Match, line string) error {
 	entry, err := parseLine(line)
 	if err != nil {
-		return
+		return err
 	}
 	switch entry.(type) {
 	case InitGame:
@@ -46,11 +50,18 @@ func (r *ReadLog) processMatch(matchChan chan<- []Match, line string) {
 		// create a match and send it to the channel
 		newMatch := make([]Match, len(r.Match))
 		copy(newMatch, r.Match)
-		matchChan <- newMatch
-		r.Match = nil
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case matchChan <- newMatch:
+			r.Match = nil
+		}
+
 	default:
 		r.Match = append(r.Match, entry)
 	}
+
+	return nil
 }
 
 func parseLine(line string) (Match, error) {
